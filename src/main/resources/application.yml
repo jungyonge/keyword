@@ -32,6 +32,6 @@ server:
   port: 8081
 
 naver:
-  apiKe: 010000000083b3583ae52dbad36cbfa907ffc9658179e9adb0222a26a0bbe2b170df2e190d
+  apiKey: 010000000083b3583ae52dbad36cbfa907ffc9658179e9adb0222a26a0bbe2b170df2e190d
   secretKey: AQAAAACDs1g65S2602y/qQf/yWWBs44i6dprM4LqrN/als5s+A==
   customerId: 1995916
