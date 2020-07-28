@@ -25,9 +25,4 @@ public class NaverAdController {
 
     }
 
-    public void tttt(){
-        String s = "123";
-        s.matches("dfad");
-
-    }
 }
