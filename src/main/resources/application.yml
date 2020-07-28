@@ -1,0 +1,37 @@
+spring:
+  profiles: company
+  batch:
+    job:
+      enabled: false
+  datasource:
+    url: jdbc:mysql://localhost:3306/keyword?autoReconnect=true&serverTimezone=UTC
+    username: root
+    password: wjddyd.1204
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    initialize: false
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+    tomcat:
+      initial-size: 5
+      min-idle: 5
+      max-idle: 10
+      max-active: 10
+      validation-query: select 1 from dual
+      test-while-idle: true
+      max-wait: 10000
+  mvc:
+    throw-exception-if-no-handler-found: true
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+
+server:
+  port: 8081
+
+naver:
+  apiKe: 010000000083b3583ae52dbad36cbfa907ffc9658179e9adb0222a26a0bbe2b170df2e190d
+  secretKey: AQAAAACDs1g65S2602y/qQf/yWWBs44i6dprM4LqrN/als5s+A==
+  customerId: 1995916
