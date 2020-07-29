@@ -2,6 +2,7 @@ package com.keyword.model;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
@@ -12,7 +13,8 @@ public class RelateKeywordStatModel {
     public List<Keyword> keywordList;
 
     @Data
-    public class Keyword {
+    @EqualsAndHashCode
+    public class Keyword implements Comparable<Keyword> {
         private String relKeyword;
         private String monthlyPcQcCnt;
         private String monthlyMobileQcCnt;
@@ -22,6 +24,16 @@ public class RelateKeywordStatModel {
         private String monthlyAveMobileCtr;
         private String plAvgDepth;
         private String compIdx;
+
+        @Override
+        public int compareTo(Keyword o) {
+            if (Integer.parseInt(this.monthlyMobileQcCnt) > Integer.parseInt(o.getMonthlyMobileQcCnt())) {
+                return -1;
+            } else if (Integer.parseInt(this.monthlyMobileQcCnt) < Integer.parseInt(o.getMonthlyMobileQcCnt())) {
+                return 1;
+            }
+            return 0;
+        }
     }
 }
 

@@ -23,7 +23,7 @@ public class NaverAdController {
 
     @GetMapping
     public NaverAdResponse naverAdKeywordStat(
-                                           @RequestBody NaverAdRequest request) throws UnsupportedEncodingException, SignatureException {
+                                           @RequestBody NaverAdRequest request) throws UnsupportedEncodingException, SignatureException, InterruptedException {
         return NaverAdResponse.of(naverAdService.naverAdKeywordStat(request));
 
     }

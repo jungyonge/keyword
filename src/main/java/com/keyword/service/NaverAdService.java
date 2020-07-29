@@ -18,8 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.SignatureException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -45,35 +44,75 @@ public class NaverAdService {
     }
 
     @Transactional
-    public String naverAdKeywordStat(NaverAdRequest request) throws SignatureException, UnsupportedEncodingException {
+    public List naverAdKeywordStat(NaverAdRequest request) throws SignatureException, UnsupportedEncodingException, InterruptedException {
+
+        List<RelateKeywordStatModel.Keyword> lastKeywordList = new ArrayList<>();
+
         String keyword = request.getKeyword();
-        Gson gson = new Gson();
-
         String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
-        String hmacSHA256 = Signatures.of(timestamp,"GET","/keywordstool",secretKey);
-        String query = String.format("hintKeywords=%s&showDetail=%s", URLEncoder.encode(keyword,charset),URLEncoder.encode(showDetail,charset));
-        Map<String, Object> map = new HashMap<String, Object>();
+        String hmacSHA256 = Signatures.of(timestamp, "GET", "/keywordstool", secretKey);
+        String query = String.format("hintKeywords=%s&showDetail=%s", URLEncoder.encode(keyword, charset), URLEncoder.encode(showDetail, charset));
+        BufferedReader input = getNaverAdKeywordStat(baseUrl + "/keywordstool", query, hmacSHA256);
 
-        BufferedReader input = getNaverAdKeywordStat(baseUrl+"/keywordstool",query,hmacSHA256);
+        checkUnder10(lastKeywordList, input);
+
+        Collections.sort(lastKeywordList);
+        List tempKeywordList = getRelKeywordStat(lastKeywordList);;
+        lastKeywordList.addAll(tempKeywordList);
+
+        List<RelateKeywordStatModel.Keyword> removeDupKeyword = new ArrayList<>(new HashSet<>(lastKeywordList));
+
+        Collections.sort(removeDupKeyword);
+
+        return removeDupKeyword;
+    }
+
+    private List getRelKeywordStat(List<RelateKeywordStatModel.Keyword> keywordList) throws SignatureException, UnsupportedEncodingException, InterruptedException {
+        List<RelateKeywordStatModel.Keyword> result = new ArrayList<>();
+
+        int index = 30;
+        if (keywordList.size() < 30) {
+            index = keywordList.size();
+        }
+        for (int i = 1; i < index; i++) {
+
+            String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
+            String hmacSHA256 = Signatures.of(timestamp, "GET", "/keywordstool", secretKey);
+            String query = String.format("hintKeywords=%s&showDetail=%s", URLEncoder.encode(keywordList.get(i).getRelKeyword(), charset), URLEncoder.encode(showDetail, charset));
+
+            BufferedReader input = getNaverAdKeywordStat(baseUrl + "/keywordstool", query, hmacSHA256);
+            Thread.sleep(3000);
+
+            if (input == null) {
+                continue;
+            }
+
+            checkUnder10(result, input);
+        }
+        return result;
+
+    }
+
+    private void checkUnder10(List<RelateKeywordStatModel.Keyword> result, BufferedReader input) {
+        Gson gson = new Gson();
 
         RelateKeywordStatModel relateKeywordStatModel = gson.fromJson(input, RelateKeywordStatModel.class);
         int size = relateKeywordStatModel.getKeywordList().size();
-        for (int i = 0; i < size; i++) {
-            String key = relateKeywordStatModel.getKeywordList().get(i).getRelKeyword();
-            map.put("keyword", key);
+        for (int j = 0; j < size; j++) {
+            String monthlyPcQcCnt = relateKeywordStatModel.getKeywordList().get(j).getMonthlyPcQcCnt();
+            String monthlyMobileQcCnt = relateKeywordStatModel.getKeywordList().get(j).getMonthlyMobileQcCnt();
+            if (!monthlyPcQcCnt.equals("< 10") && !monthlyMobileQcCnt.equals("< 10")) {
+                result.add(relateKeywordStatModel.getKeywordList().get(j));
+            }
         }
-
-        return "";
     }
-
 
     private BufferedReader getNaverAdKeywordStat(String requestURL, String query, String hmacSHA256) {
         String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
         HttpURLConnection connection = null;
         Gson gson = new Gson();
         BufferedReader input = null;
-        RelateKeywordStatModel relateKeywordStatModel = null;
-        Map<String, Object> map = new HashMap<String, Object>();
+
         try {
             //Private API Header 세팅
             URL url = new URL(requestURL + "?" + query);
@@ -88,8 +127,13 @@ public class NaverAdService {
             connection.setRequestProperty("Content-type", "application/json");
             connection.setDoOutput(true);
             connection.setDoInput(true);
-            input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            if (connection.getResponseCode() == 200) {
+                input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            } else {
+                log.error(connection.getResponseMessage());
+                log.error(String.valueOf(connection.getResponseCode()));
 
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
