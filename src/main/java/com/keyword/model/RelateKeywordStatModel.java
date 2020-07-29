@@ -24,6 +24,14 @@ public class RelateKeywordStatModel {
         private String monthlyAveMobileCtr;
         private String plAvgDepth;
         private String compIdx;
+        private int whereBlog;
+        private int whereWeb;
+        private int whereMobileBlog;
+        private int whereMobileWeb;
+        private int blogTotalPost;
+        private int naverCnt;
+        private int tistoryCnt;
+        private int elseCnt;
 
         @Override
         public int compareTo(Keyword o) {
