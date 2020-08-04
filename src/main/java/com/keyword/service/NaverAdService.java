@@ -7,6 +7,7 @@ import com.keyword.model.request.NaverAdRequest;
 import com.keyword.repository.KeywordStatRepository;
 import com.keyword.util.Signatures;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,19 +81,6 @@ public class NaverAdService {
 //
 //        Collections.sort(removeDupKeyword);
 
-//        Mono.just("test")
-//                .flatMap(id ->
-//                                Flux.range(0, lastKeywordList.size())
-//                                        .retry(5)
-//                                        .parallel(5)
-//                                        .runOn(Schedulers.newParallel("PAR", 5))
-//                                        .map(i -> {
-//                                            naverBlogStatFlux(lastKeywordList, i);
-//                                            return i;
-//                                        })
-//                                        .then())
-//                .subscribe(i -> log.info("완료 : " + i));
-
 
 //        Flux.range(0, lastKeywordList.size())
 //                .retry(5)
@@ -108,8 +96,8 @@ public class NaverAdService {
 
         List<RelateKeywordStatModel.Keyword> test =  Flux.range(0, lastKeywordList.size())
                 .retry(5)
-                .parallel(5)
-                .runOn(Schedulers.newParallel("PAR", 5))
+                .parallel(1000)
+                .runOn(Schedulers.newParallel("PAR", 1000))
                 .map(i -> {
                     naverBlogStatFlux(lastKeywordList, i);
                     return lastKeywordList.get(i);
